@@ -1,0 +1,145 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ─── Design tokens ──────────────────────────────────────── */
+:root {
+  --surface-0: #0F172A;   /* page bg */
+  --surface-1: #1E293B;   /* card / sider */
+  --surface-2: #273549;   /* elevated card, input */
+  --surface-3: #334155;   /* border / divider */
+  --surface-4: #475569;   /* muted border hover */
+  --text-primary:   #F1F5F9;  /* ≥ 7:1 on surface-1 */
+  --text-secondary: #94A3B8;  /* ≥ 4.5:1 on surface-1 */
+  --text-muted:     #64748B;  /* labels, hints – 3:1 min */
+  --brand:    #34D399;
+  --brand-dim: rgba(5, 150, 105, 0.15);
+}
+
+body {
+  margin: 0;
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root { min-height: 100dvh; }
+
+/* ─── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-0); }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--surface-4); }
+
+/* Faster tap response on mobile */
+button, a, [role="button"] { touch-action: manipulation; }
+
+/* ─── Ant Design layout ──────────────────────────────────── */
+.ant-layout { background: var(--surface-0) !important; }
+.ant-layout-sider { background: var(--surface-1) !important; }
+.ant-layout-header { background: var(--surface-1) !important; }
+.ant-menu.ant-menu-inline { background: var(--surface-1) !important; }
+.ant-menu-item-selected { background: var(--brand-dim) !important; }
+
+/* ─── Modal / Drawer ─────────────────────────────────────── */
+.ant-modal-content { background: var(--surface-1) !important; }
+.ant-modal-header { background: var(--surface-1) !important; border-bottom: 1px solid var(--surface-3) !important; }
+.ant-modal-footer { border-top: 1px solid var(--surface-3) !important; }
+.ant-drawer-content { background: var(--surface-1) !important; }
+.ant-drawer-header { background: var(--surface-1) !important; border-bottom: 1px solid var(--surface-3) !important; }
+
+/* ─── Card ───────────────────────────────────────────────── */
+.ant-card { background: var(--surface-1) !important; border-color: var(--surface-3) !important; }
+.ant-card-head { background: var(--surface-1) !important; border-bottom-color: var(--surface-3) !important; color: var(--text-primary) !important; }
+.ant-card-body { color: var(--text-primary) !important; }
+
+/* ─── Form / Input ───────────────────────────────────────── */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-input-number-affix-wrapper,
+.ant-select:not(.ant-select-customize-input) .ant-select-selector,
+.ant-picker {
+  background: var(--surface-2) !important;
+  border-color: var(--surface-3) !important;
+  color: var(--text-primary) !important;
+}
+.ant-input::placeholder,
+.ant-input-number-input::placeholder { color: var(--text-muted) !important; }
+.ant-input:focus,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused,
+.ant-input-number:focus,
+.ant-input-number-focused,
+.ant-select-focused .ant-select-selector,
+.ant-picker-focused {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.15) !important;
+}
+.ant-input-number-handler-wrap { background: var(--surface-2) !important; border-color: var(--surface-3) !important; }
+.ant-input-number-handler { border-color: var(--surface-3) !important; color: var(--text-secondary) !important; }
+.ant-input-password-icon { color: var(--text-muted) !important; }
+
+/* ─── Select dropdown ────────────────────────────────────── */
+.ant-select-dropdown { background: var(--surface-1) !important; border: 1px solid var(--surface-3) !important; }
+.ant-select-item { color: var(--text-primary) !important; }
+.ant-select-item-option-active:not(.ant-select-item-option-disabled) { background: var(--brand-dim) !important; }
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) { background: rgba(5, 150, 105, 0.25) !important; color: var(--brand) !important; }
+.ant-select-arrow { color: var(--text-muted) !important; }
+.ant-select-clear { background: var(--surface-2) !important; color: var(--text-muted) !important; }
+
+/* ─── AutoComplete ───────────────────────────────────────── */
+.ant-select-auto-complete .ant-select-selector { background: var(--surface-2) !important; border-color: var(--surface-3) !important; }
+
+/* ─── Table ──────────────────────────────────────────────── */
+.ant-table { background: var(--surface-1) !important; color: var(--text-primary) !important; }
+.ant-table-thead > tr > th { background: var(--surface-2) !important; color: var(--text-secondary) !important; border-bottom-color: var(--surface-3) !important; font-weight: 600; }
+.ant-table-tbody > tr > td { border-bottom-color: var(--surface-3) !important; color: var(--text-primary) !important; }
+.ant-table-tbody > tr:hover > td { background: var(--brand-dim) !important; }
+.ant-table-row:nth-child(even) > td { background: rgba(255,255,255,0.02); }
+.ant-table-placeholder { background: var(--surface-1) !important; }
+.ant-empty-description { color: var(--text-muted) !important; }
+.ant-pagination-item { background: var(--surface-2) !important; border-color: var(--surface-3) !important; }
+.ant-pagination-item a { color: var(--text-secondary) !important; }
+.ant-pagination-item-active { border-color: var(--brand) !important; }
+.ant-pagination-item-active a { color: var(--brand) !important; }
+.ant-pagination-prev button,
+.ant-pagination-next button { background: var(--surface-2) !important; border-color: var(--surface-3) !important; color: var(--text-secondary) !important; }
+
+/* ─── Descriptions ───────────────────────────────────────── */
+.ant-descriptions-item-label { color: var(--text-secondary) !important; background: var(--surface-2) !important; }
+.ant-descriptions-item-content { color: var(--text-primary) !important; background: var(--surface-1) !important; }
+.ant-descriptions-view { border-color: var(--surface-3) !important; }
+.ant-descriptions-row { border-bottom-color: var(--surface-3) !important; }
+
+/* ─── Tag ────────────────────────────────────────────────── */
+.ant-tag { border-color: var(--surface-3) !important; }
+
+/* ─── Progress ───────────────────────────────────────────── */
+.ant-progress-inner { background: var(--surface-3) !important; }
+
+/* ─── Tooltip (Ant) ──────────────────────────────────────── */
+.ant-tooltip-inner { background: var(--surface-2) !important; color: var(--text-primary) !important; }
+.ant-tooltip-arrow-content { background: var(--surface-2) !important; }
+
+/* ─── Popconfirm / Popover ───────────────────────────────── */
+.ant-popover-inner { background: var(--surface-1) !important; border: 1px solid var(--surface-3) !important; }
+.ant-popover-message { color: var(--text-primary) !important; }
+
+/* ─── Divider ────────────────────────────────────────────── */
+.ant-divider { border-color: var(--surface-3) !important; }
+.ant-divider-inner-text { color: var(--text-secondary) !important; }
+
+/* ─── Statistic ──────────────────────────────────────────── */
+.ant-statistic-title { color: var(--text-secondary) !important; }
+
+/* ─── Message / notification toast ──────────────────────── */
+.ant-message-notice-content { background: var(--surface-1) !important; border: 1px solid var(--surface-3) !important; color: var(--text-primary) !important; box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important; }
+
+/* ─── Spin ───────────────────────────────────────────────── */
+.ant-spin-dot-item { background-color: var(--brand) !important; }
+
+/* ─── Mobile safe-area ───────────────────────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+}
