@@ -1,140 +1,130 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 import uuid
-from datetime import datetime
 
 from app.database import get_db
-from app.models.suggestion import Suggestion
 from app.models.recipe import Recipe
 from app.models.ingredient import Ingredient
 from app.models.recipe_ingredient import RecipeIngredient
 from app.dependencies import get_current_user
-from app.services.suggestion_service import fetch_meal_suggestion
+from app.services.suggestion_service import fetch_meal_suggestions
 from app.utils.crypto import decrypt
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/suggestions", tags=["suggestions"])
 
+
 class FetchSuggestionRequest(BaseModel):
     meal_slot: str = "lunch"
-    preferences: str = None
+    preferences: str | None = None
 
-class SuggestionResponse(BaseModel):
-    meal_name: str
-    ingredients: list
-    prep_time: int
-    servings: int
-    macros: dict
 
 class ConvertToRecipeRequest(BaseModel):
     meal_name: str
-    ingredients: list
+    description: str | None = None
+    instructions: str | None = None
+    ingredients: list  # each item has full nutrition per-100g fields
     prep_time: int
+    cook_time: int | None = None
     servings: int
     macros: dict
 
-@router.post("/fetch", response_model=SuggestionResponse)
-async def get_meal_suggestion(
-    request: FetchSuggestionRequest,
-    current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """Get a new meal suggestion based on meal slot and preferences."""
-    try:
-        # Get and decrypt user's API key from database
-        if not current_user.anthropic_api_key_encrypted:
-            raise ValueError("User has not configured an Anthropic API key")
-        
-        api_key = decrypt(current_user.anthropic_api_key_encrypted)
-        suggestion = fetch_meal_suggestion(api_key, request.meal_slot, request.preferences)
-        
-        # Store suggestion in DB
-        db_suggestion = Suggestion(
-            id=str(uuid.uuid4()),
-            user_id=current_user.id,
-            meal_name=suggestion["meal_name"],
-            ingredients=suggestion["ingredients"],
-            prep_time=suggestion["prep_time"],
-            servings=suggestion["servings"],
-            macros=suggestion["macros"]
+
+def _user_context(user) -> str | None:
+    parts = []
+    if user.calorie_goal:
+        parts.append(f"Daily calorie goal: {user.calorie_goal} kcal")
+    if user.protein_goal_g:
+        parts.append(
+            f"Protein: {user.protein_goal_g}g, Carbs: {user.carbs_goal_g}g, Fat: {user.fat_goal_g}g"
         )
-        db.add(db_suggestion)
-        await db.commit()
-        
-        return suggestion
+    if user.dietary_preferences:
+        parts.append(f"Dietary preferences: {', '.join(user.dietary_preferences)}")
+    return ". ".join(parts) if parts else None
+
+
+@router.post("/fetch", response_model=list)
+async def get_meal_suggestions(
+    request: FetchSuggestionRequest,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return 3–5 AI-generated meal suggestions with per-ingredient nutrition data."""
+    if not current_user.anthropic_api_key_encrypted:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No Anthropic API key set. Add one in Settings.",
+        )
+    try:
+        api_key = decrypt(current_user.anthropic_api_key_encrypted)
+        suggestions = await fetch_meal_suggestions(
+            api_key,
+            meal_slot=request.meal_slot,
+            preferences=request.preferences,
+            user_context=_user_context(current_user),
+        )
+        return suggestions
     except Exception as e:
-        print(f"Error in fetch suggestion: {type(e).__name__}: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch suggestion: {str(e)}"
+            detail=f"Failed to fetch suggestions: {str(e)}",
         )
 
-@router.post("/convert-to-recipe")
+
+@router.post("/convert-to-recipe", status_code=201)
 async def convert_suggestion_to_recipe(
     data: ConvertToRecipeRequest,
-    current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
-    """Convert a meal suggestion to a saved recipe."""
+    """Persist one meal suggestion as a recipe with accurate per-ingredient nutrition."""
     try:
-        print(f"DEBUG: Converting suggestion to recipe: {data.meal_name}")
-        
-        # Create recipe with valid fields only
         new_recipe = Recipe(
             id=str(uuid.uuid4()),
             user_id=current_user.id,
             name=data.meal_name,
+            description=data.description,
+            instructions=data.instructions,
             servings=data.servings,
             prep_time_minutes=data.prep_time,
+            cook_time_minutes=data.cook_time,
             is_ai_generated=True,
         )
         db.add(new_recipe)
-        
-        # Process ingredients - create ingredient entries and link to recipe
-        for ing_data in data.ingredients:
-            # Create ingredient (AI-generated ingredients stored without macro details)
+
+        for ing in data.ingredients:
             ingredient = Ingredient(
                 id=str(uuid.uuid4()),
-                name=ing_data["name"],
-                calories_per_100g=0,
-                protein_per_100g=0,
-                carbs_per_100g=0,
-                fat_per_100g=0,
+                name=ing["name"],
+                # Use the AI-provided per-100g nutrition so macros compute correctly
+                calories_per_100g=float(ing.get("calories_per_100g") or 0),
+                protein_per_100g=float(ing.get("protein_per_100g") or 0),
+                carbs_per_100g=float(ing.get("carbs_per_100g") or 0),
+                fat_per_100g=float(ing.get("fat_per_100g") or 0),
                 unit="g",
                 created_by=current_user.id,
             )
             db.add(ingredient)
-            
-            # Create recipe-ingredient link
-            recipe_ingredient = RecipeIngredient(
+
+            db.add(RecipeIngredient(
                 id=str(uuid.uuid4()),
                 recipe_id=new_recipe.id,
                 ingredient_id=ingredient.id,
-                quantity_g=ing_data.get("amount", 0),
-                display_amount=ing_data.get("amount"),
-                display_unit=ing_data.get("unit", "g"),
-            )
-            db.add(recipe_ingredient)
-        
+                quantity_g=float(ing.get("quantity_g") or ing.get("amount") or 100),
+                display_amount=ing.get("display_amount"),
+                display_unit=ing.get("display_unit"),
+            ))
+
         await db.commit()
-        await db.refresh(new_recipe)
-        
-        print(f"DEBUG: Recipe created successfully: {new_recipe.id}")
-        
-        return {
-            "id": new_recipe.id,
-            "name": new_recipe.name,
-            "created_at": new_recipe.created_at
-        }
+        return {"id": new_recipe.id, "name": new_recipe.name}
+
     except Exception as e:
-        print(f"Error in convert-to-recipe: {type(e).__name__}: {str(e)}")
         import traceback
         traceback.print_exc()
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create recipe: {str(e)}"
+            detail=f"Failed to create recipe: {str(e)}",
         )

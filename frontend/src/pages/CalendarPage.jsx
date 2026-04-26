@@ -1,19 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button, Select, Typography, Spin, message, Modal } from 'antd'
-import { LeftOutlined, RightOutlined, RobotOutlined } from '@ant-design/icons'
+import useIsMobile from '../hooks/useIsMobile'
+import { mobileModalProps } from '../utils/modalProps'
+import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import {
   DndContext,
   closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
-  DragOverlay,
 } from '@dnd-kit/core'
 import dayjs from 'dayjs'
 import { listPlans, createPlan, addEntry, updateEntry } from '../api/mealPlans'
 import { listRecipes } from '../api/recipes'
 import DayColumn from '../components/calendar/DayColumn'
-import AISuggestionPanel from '../components/ai/AISuggestionPanel'
 
 function getMondayStr(d) {
   const day = dayjs(d)
@@ -28,9 +28,10 @@ export default function CalendarPage() {
   const [recipes, setRecipes] = useState([])
   const [addModal, setAddModal] = useState(null) // { dayIndex, slot }
   const [selectedRecipe, setSelectedRecipe] = useState(null)
-  const [aiOpen, setAiOpen] = useState(false)
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+  const isMobile = useIsMobile()
+  const addMealModalProps = mobileModalProps(isMobile, 400)
 
   const loadWeek = useCallback(async () => {
     setLoading(true)
@@ -109,9 +110,6 @@ export default function CalendarPage() {
           </Typography.Title>
           <Button icon={<RightOutlined />} onClick={() => navigate(1)} />
         </div>
-        <Button icon={<RobotOutlined />} type="dashed" onClick={() => setAiOpen(true)}>
-          AI Suggestions
-        </Button>
       </div>
 
       {loading ? <Spin /> : (
@@ -146,6 +144,7 @@ export default function CalendarPage() {
         onOk={handleAddEntry}
         onCancel={() => setAddModal(null)}
         okText="Add"
+        {...addMealModalProps}
       >
         <Select
           showSearch
@@ -166,7 +165,6 @@ export default function CalendarPage() {
         )}
       </Modal>
 
-      <AISuggestionPanel open={aiOpen} onClose={() => setAiOpen(false)} />
     </div>
   )
 }

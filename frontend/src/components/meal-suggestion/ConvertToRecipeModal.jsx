@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { Modal, Form, InputNumber, Divider, List } from 'antd'
+import useIsMobile from '../../hooks/useIsMobile'
+import { mobileModalProps } from '../../utils/modalProps'
 
 const ConvertToRecipeModal = ({
   visible,
@@ -10,6 +12,8 @@ const ConvertToRecipeModal = ({
 }) => {
   const [form] = Form.useForm()
   const [servings, setServings] = useState(meal?.servings || 1)
+  const isMobile = useIsMobile()
+  const modalProps = mobileModalProps(isMobile, 450)
 
   React.useEffect(() => {
     if (visible && meal) {
@@ -37,7 +41,7 @@ const ConvertToRecipeModal = ({
       confirmLoading={isLoading}
       okText="Save Recipe"
       cancelText="Cancel"
-      width={450}
+      {...modalProps}
     >
       {meal && (
         <>
@@ -88,7 +92,8 @@ const ConvertToRecipeModal = ({
               renderItem={(item) => (
                 <List.Item style={{ padding: '4px 0' }}>
                   <span style={{ fontSize: '12px' }}>
-                    {item.amount} {item.unit} {item.name}
+                    {item.display_amount ?? item.quantity_g}
+                    {item.display_unit ? ` ${item.display_unit}` : 'g'} {item.name}
                   </span>
                 </List.Item>
               )}

@@ -93,8 +93,9 @@ async def add_entry(plan_id: str, body: EntryCreate, db: AsyncSession = Depends(
     entry = MealPlanEntry(id=str(uuid.uuid4()), meal_plan_id=plan_id, **body.model_dump())
     db.add(entry)
     await db.commit()
-    await db.refresh(entry)
-    return _build_entry_read(entry)
+    # Re-query so lazy="selectin" chains (recipe → recipe_ingredients → ingredient) fire
+    entry_result = await db.execute(select(MealPlanEntry).where(MealPlanEntry.id == entry.id))
+    return _build_entry_read(entry_result.scalar_one())
 
 
 @router.patch("/{plan_id}/entries/{entry_id}", response_model=EntryRead)
@@ -112,8 +113,9 @@ async def update_entry(plan_id: str, entry_id: str, body: EntryUpdate, db: Async
     for field, value in body.model_dump(exclude_none=True).items():
         setattr(entry, field, value)
     await db.commit()
-    await db.refresh(entry)
-    return _build_entry_read(entry)
+    # Re-query so lazy="selectin" chains (recipe → recipe_ingredients → ingredient) fire
+    entry_result = await db.execute(select(MealPlanEntry).where(MealPlanEntry.id == entry.id))
+    return _build_entry_read(entry_result.scalar_one())
 
 
 @router.delete("/{plan_id}/entries/{entry_id}", status_code=204)

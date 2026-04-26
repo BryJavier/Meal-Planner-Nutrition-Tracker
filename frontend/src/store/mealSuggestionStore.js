@@ -2,38 +2,24 @@ import { create } from 'zustand'
 
 const useMealSuggestionStore = create((set) => ({
   isDrawerOpen: false,
-  currentSuggestion: null,
+  suggestions: [],             // array of 3-5 suggestion objects
   isLoadingSuggestion: false,
-  error: null,
   mealType: 'lunch',
   preferences: '',
 
   setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
-  
-  setCurrentSuggestion: (suggestion) => set({ currentSuggestion: suggestion }),
-  
+  setSuggestions: (suggestions) => set({ suggestions }),
   setLoadingSuggestion: (isLoading) => set({ isLoadingSuggestion: isLoading }),
-  
-  setError: (error) => set({ error }),
-
   setMealType: (mealType) => set({ mealType }),
-
   setPreferences: (preferences) => set({ preferences }),
-  
-  resetSuggestion: () => set({ 
-    currentSuggestion: null, 
-    isLoadingSuggestion: false,
-    error: null 
-  }),
-  
-  resetDrawer: () => set({ 
+
+  resetDrawer: () => set({
     isDrawerOpen: false,
-    currentSuggestion: null,
+    suggestions: [],
     isLoadingSuggestion: false,
-    error: null,
     mealType: 'lunch',
-    preferences: ''
-  })
+    preferences: '',
+  }),
 }))
 
 export default useMealSuggestionStore

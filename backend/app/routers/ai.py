@@ -1,6 +1,7 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -11,7 +12,7 @@ from app.models.recipe_ingredient import RecipeIngredient
 from app.models.ingredient import Ingredient
 from app.schemas.ai import MealSuggestionRequest, RecipeSuggestionRequest
 from app.schemas.recipe import RecipeRead
-from app.routers.recipes import _build_recipe_read
+from app.routers.recipes import _build_recipe_read, _eager_recipe_stmt
 from app.services import ai_service
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
@@ -102,5 +103,6 @@ async def save_suggested(
         ))
 
     await db.commit()
-    await db.refresh(recipe)
-    return _build_recipe_read(recipe)
+    # Re-query with eager loading so recipe_ingredients → ingredient chain is populated
+    result = await db.execute(_eager_recipe_stmt(select(Recipe).where(Recipe.id == recipe.id)))
+    return _build_recipe_read(result.scalar_one())

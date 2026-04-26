@@ -4,6 +4,47 @@ import { Card, Descriptions, Tag, Table, Typography, Button, Spin, Statistic, Ro
 import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons'
 import { getRecipe } from '../api/recipes'
 import RecipeForm from '../components/recipes/RecipeForm'
+import useIsMobile from '../hooks/useIsMobile'
+
+// ── Ingredient card for mobile ──────────────────────────────────────────────
+function IngredientCard({ record }) {
+  return (
+    <div style={{
+      background: '#1E293B',
+      border: '1px solid #334155',
+      borderRadius: 8,
+      padding: '10px 12px',
+      marginBottom: 8,
+    }}>
+      <Typography.Text strong style={{ color: '#F1F5F9', display: 'block', marginBottom: 6 }}>
+        {record.ingredient_name}
+      </Typography.Text>
+
+      <div style={{ fontSize: 12, color: '#94A3B8', marginBottom: 6 }}>
+        {record.display_amount
+          ? `${record.display_amount} ${record.display_unit || ''}`.trim()
+          : `${record.quantity_g}g`}
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {[
+          { label: 'kcal', value: record.calories, bg: '#7c3aed' },
+          { label: 'P', value: `${record.protein}g`, bg: '#0369a1' },
+          { label: 'C', value: `${record.carbs}g`, bg: '#b45309' },
+          { label: 'F', value: `${record.fat}g`, bg: '#065f46' },
+        ].map(({ label, value, bg }) => (
+          <span key={label} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 3,
+            padding: '2px 8px', borderRadius: 20, fontSize: 11,
+            fontWeight: 500, color: '#F1F5F9', background: bg,
+          }}>
+            {label} <strong>{value}</strong>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function RecipeDetailPage() {
   const { id } = useParams()
@@ -11,6 +52,7 @@ export default function RecipeDetailPage() {
   const [recipe, setRecipe] = useState(null)
   const [loading, setLoading] = useState(true)
   const [editOpen, setEditOpen] = useState(false)
+  const isMobile = useIsMobile()
 
   const fetch = async () => {
     setLoading(true)
@@ -29,6 +71,15 @@ export default function RecipeDetailPage() {
 
   const n = recipe.nutrition_per_serving
 
+  const tableColumns = [
+    { title: 'Ingredient', dataIndex: 'ingredient_name' },
+    { title: 'Amount', render: (_, r) => r.display_amount ? `${r.display_amount} ${r.display_unit || ''}`.trim() : `${r.quantity_g}g` },
+    { title: 'Calories', dataIndex: 'calories', render: v => `${v} kcal` },
+    { title: 'Protein', dataIndex: 'protein', render: v => `${v}g` },
+    { title: 'Carbs', dataIndex: 'carbs', render: v => `${v}g` },
+    { title: 'Fat', dataIndex: 'fat', render: v => `${v}g` },
+  ]
+
   return (
     <div>
       <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/recipes')} style={{ marginBottom: 16 }}>
@@ -36,7 +87,7 @@ export default function RecipeDetailPage() {
       </Button>
 
       <Card
-        title={<Typography.Title level={3} style={{ margin: 0 }}>{recipe.name}</Typography.Title>}
+        title={<Typography.Title level={3} style={{ margin: 0, whiteSpace: 'normal', wordBreak: 'break-word' }}>{recipe.name}</Typography.Title>}
         extra={<Button icon={<EditOutlined />} onClick={() => setEditOpen(true)}>Edit</Button>}
       >
         {recipe.description && <Typography.Paragraph>{recipe.description}</Typography.Paragraph>}
@@ -48,34 +99,38 @@ export default function RecipeDetailPage() {
         </Descriptions>
 
         {recipe.tags?.length > 0 && (
-          <div style={{ marginBottom: 16 }}>
-            {recipe.tags.map(t => <Tag key={t} color="green">{t}</Tag>)}
+          <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {recipe.tags.map(t => <Tag key={t} color="green" style={{ margin: 0 }}>{t}</Tag>)}
           </div>
         )}
 
+        {/* Macro stats — 2×2 grid on mobile, single row on desktop */}
         {n && (
-          <Row gutter={16} style={{ marginBottom: 16 }}>
-            <Col><Statistic title="Calories" value={n.calories} suffix="kcal" /></Col>
-            <Col><Statistic title="Protein" value={n.protein_g} suffix="g" /></Col>
-            <Col><Statistic title="Carbs" value={n.carbs_g} suffix="g" /></Col>
-            <Col><Statistic title="Fat" value={n.fat_g} suffix="g" /></Col>
+          <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+            <Col xs={12} sm={6}><Statistic title="Calories" value={n.calories} suffix="kcal" /></Col>
+            <Col xs={12} sm={6}><Statistic title="Protein" value={n.protein_g} suffix="g" /></Col>
+            <Col xs={12} sm={6}><Statistic title="Carbs" value={n.carbs_g} suffix="g" /></Col>
+            <Col xs={12} sm={6}><Statistic title="Fat" value={n.fat_g} suffix="g" /></Col>
           </Row>
         )}
 
-        <Table
-          size="small"
-          dataSource={recipe.ingredients}
-          rowKey="id"
-          pagination={false}
-          columns={[
-            { title: 'Ingredient', dataIndex: 'ingredient_name' },
-            { title: 'Amount', render: (_, r) => r.display_amount ? `${r.display_amount} ${r.display_unit || ''}` : `${r.quantity_g}g` },
-            { title: 'Calories', dataIndex: 'calories', render: v => `${v} kcal` },
-            { title: 'Protein', dataIndex: 'protein', render: v => `${v}g` },
-            { title: 'Carbs', dataIndex: 'carbs', render: v => `${v}g` },
-            { title: 'Fat', dataIndex: 'fat', render: v => `${v}g` },
-          ]}
-        />
+        {/* Ingredient list: cards on mobile, table on desktop */}
+        <Typography.Title level={5} style={{ marginBottom: 8 }}>Ingredients</Typography.Title>
+        {isMobile ? (
+          <div>
+            {recipe.ingredients?.map((ing) => (
+              <IngredientCard key={ing.id} record={ing} />
+            ))}
+          </div>
+        ) : (
+          <Table
+            size="small"
+            dataSource={recipe.ingredients}
+            rowKey="id"
+            pagination={false}
+            columns={tableColumns}
+          />
+        )}
 
         {recipe.instructions && (
           <div style={{ marginTop: 24 }}>
