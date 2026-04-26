@@ -5,6 +5,8 @@ const useMealSuggestionStore = create((set) => ({
   currentSuggestion: null,
   isLoadingSuggestion: false,
   error: null,
+  mealType: 'lunch',
+  preferences: '',
 
   setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
   
@@ -13,6 +15,10 @@ const useMealSuggestionStore = create((set) => ({
   setLoadingSuggestion: (isLoading) => set({ isLoadingSuggestion: isLoading }),
   
   setError: (error) => set({ error }),
+
+  setMealType: (mealType) => set({ mealType }),
+
+  setPreferences: (preferences) => set({ preferences }),
   
   resetSuggestion: () => set({ 
     currentSuggestion: null, 
@@ -24,7 +30,9 @@ const useMealSuggestionStore = create((set) => ({
     isDrawerOpen: false,
     currentSuggestion: null,
     isLoadingSuggestion: false,
-    error: null
+    error: null,
+    mealType: 'lunch',
+    preferences: ''
   })
 }))
 

@@ -1,14 +1,19 @@
 import anthropic
 import json
 
-def fetch_meal_suggestion(api_key: str):
-    """Fetch AI-generated meal suggestion from Anthropic."""
+def fetch_meal_suggestion(api_key: str, meal_slot: str = "lunch", preferences: str = None):
+    """Fetch AI-generated meal suggestion from Anthropic based on meal slot and preferences."""
     if not api_key:
         raise ValueError("Anthropic API key is not configured for this user")
     
     client = anthropic.Anthropic(api_key=api_key)
     
-    prompt = """Generate a healthy meal suggestion. Return ONLY valid JSON with this structure:
+    # Build context-aware prompt
+    prompt = f"""Generate a healthy {meal_slot.lower()} meal suggestion"""
+    if preferences:
+        prompt += f""". The user has the following preferences or ingredients available: {preferences}"""
+    
+    prompt += """. Return ONLY valid JSON with this structure:
 {
     "meal_name": "string",
     "ingredients": [

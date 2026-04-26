@@ -14,6 +14,10 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/suggestions", tags=["suggestions"])
 
+class FetchSuggestionRequest(BaseModel):
+    meal_slot: str = "lunch"
+    preferences: str = None
+
 class SuggestionResponse(BaseModel):
     meal_name: str
     ingredients: list
@@ -30,17 +34,18 @@ class ConvertToRecipeRequest(BaseModel):
 
 @router.post("/fetch", response_model=SuggestionResponse)
 async def get_meal_suggestion(
+    request: FetchSuggestionRequest,
     current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get a new meal suggestion."""
+    """Get a new meal suggestion based on meal slot and preferences."""
     try:
         # Get and decrypt user's API key from database
         if not current_user.anthropic_api_key_encrypted:
             raise ValueError("User has not configured an Anthropic API key")
         
         api_key = decrypt(current_user.anthropic_api_key_encrypted)
-        suggestion = fetch_meal_suggestion(api_key)
+        suggestion = fetch_meal_suggestion(api_key, request.meal_slot, request.preferences)
         
         # Store suggestion in DB
         db_suggestion = Suggestion(

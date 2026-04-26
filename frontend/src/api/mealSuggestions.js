@@ -1,8 +1,11 @@
 import api from './client'
 
 export const mealSuggestionsAPI = {
-  async fetchSuggestion() {
-    const response = await api.post('/api/suggestions/fetch')
+  async fetchSuggestion(mealType = 'lunch', preferences = '') {
+    const response = await api.post('/api/suggestions/fetch', {
+      meal_slot: mealType,
+      preferences: preferences || null
+    })
     return response.data
   },
 

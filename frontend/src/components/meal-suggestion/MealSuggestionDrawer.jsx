@@ -3,6 +3,7 @@ import { Drawer, Spin, Empty, message } from 'antd'
 import { useLocation } from 'react-router-dom'
 import useMealSuggestionStore from '../../store/mealSuggestionStore'
 import { mealSuggestionsAPI } from '../../api/mealSuggestions'
+import MealSuggestionInputForm from './MealSuggestionInputForm'
 import MealSuggestionCard from './MealSuggestionCard'
 import ConvertToRecipeModal from './ConvertToRecipeModal'
 
@@ -12,9 +13,13 @@ const MealSuggestionDrawer = () => {
     isDrawerOpen,
     currentSuggestion,
     isLoadingSuggestion,
+    mealType,
+    preferences,
     setDrawerOpen,
     setCurrentSuggestion,
     setLoadingSuggestion,
+    setMealType,
+    setPreferences,
     resetDrawer,
   } = useMealSuggestionStore()
 
@@ -25,16 +30,10 @@ const MealSuggestionDrawer = () => {
     resetDrawer()
   }, [location, resetDrawer])
 
-  useEffect(() => {
-    if (isDrawerOpen && !currentSuggestion) {
-      fetchSuggestion()
-    }
-  }, [isDrawerOpen, currentSuggestion])
-
-  const fetchSuggestion = async () => {
+  const fetchSuggestion = async (mealTypeValue, preferencesValue) => {
     setLoadingSuggestion(true)
     try {
-      const suggestion = await mealSuggestionsAPI.fetchSuggestion()
+      const suggestion = await mealSuggestionsAPI.fetchSuggestion(mealTypeValue, preferencesValue)
       setCurrentSuggestion(suggestion)
     } catch (error) {
       message.error('Failed to fetch meal suggestion')
@@ -42,6 +41,12 @@ const MealSuggestionDrawer = () => {
     } finally {
       setLoadingSuggestion(false)
     }
+  }
+
+  const handleSubmit = (mealTypeValue, preferencesValue) => {
+    setMealType(mealTypeValue)
+    setPreferences(preferencesValue)
+    fetchSuggestion(mealTypeValue, preferencesValue)
   }
 
   const handleConvertClick = () => {
@@ -81,17 +86,26 @@ const MealSuggestionDrawer = () => {
         width={350}
         bodyStyle={{ padding: '12px' }}
       >
-        <Spin spinning={isLoadingSuggestion} tip="Loading suggestion...">
-          {currentSuggestion ? (
+        {currentSuggestion ? (
+          <>
             <MealSuggestionCard
               meal={currentSuggestion}
               onConvert={handleConvertClick}
               isLoading={isConvertLoading}
             />
-          ) : isLoadingSuggestion ? null : (
-            <Empty description="No suggestion loaded" />
-          )}
-        </Spin>
+          </>
+        ) : (
+          <Spin spinning={isLoadingSuggestion} tip="Generating suggestion...">
+            <MealSuggestionInputForm
+              mealType={mealType}
+              onMealTypeChange={setMealType}
+              preferences={preferences}
+              onPreferencesChange={setPreferences}
+              onSubmit={handleSubmit}
+              loading={isLoadingSuggestion}
+            />
+          </Spin>
+        )}
       </Drawer>
 
       <ConvertToRecipeModal
