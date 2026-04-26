@@ -9,6 +9,7 @@ from app.models.suggestion import Suggestion
 from app.models.recipe import Recipe
 from app.dependencies import get_current_user
 from app.services.suggestion_service import fetch_meal_suggestion
+from app.utils.crypto import decrypt
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/suggestions", tags=["suggestions"])
@@ -34,11 +35,11 @@ async def get_meal_suggestion(
 ):
     """Get a new meal suggestion."""
     try:
-        # Get user's API key from database
-        api_key = current_user.anthropic_api_key_encrypted
-        if not api_key:
+        # Get and decrypt user's API key from database
+        if not current_user.anthropic_api_key_encrypted:
             raise ValueError("User has not configured an Anthropic API key")
         
+        api_key = decrypt(current_user.anthropic_api_key_encrypted)
         suggestion = fetch_meal_suggestion(api_key)
         
         # Store suggestion in DB
