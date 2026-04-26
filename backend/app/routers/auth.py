@@ -6,8 +6,15 @@ from sqlalchemy import select
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
-from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, RefreshRequest, UserRead, UserUpdate
-from app.services.auth_service import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
+from app.schemas.auth import (
+    RegisterRequest, LoginRequest, TokenResponse, RefreshRequest,
+    UserRead, UserUpdate, ChangePasswordRequest, ApiKeyRequest,
+)
+from app.services.auth_service import (
+    hash_password, verify_password,
+    create_access_token, create_refresh_token, decode_token,
+)
+from app.utils.crypto import encrypt
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -70,9 +77,51 @@ async def get_me(current_user: User = Depends(get_current_user)):
 
 
 @router.patch("/me", response_model=UserRead)
-async def update_me(body: UserUpdate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
-    for field, value in body.model_dump(exclude_none=True).items():
+async def update_me(
+    body: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    updates = body.model_dump(exclude_none=True)
+
+    if "username" in updates and updates["username"] != current_user.username:
+        clash = await db.execute(select(User).where(User.username == updates["username"]))
+        if clash.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail="Username already taken")
+
+    for field, value in updates.items():
         setattr(current_user, field, value)
+
+    db.add(current_user)
+    await db.commit()
+    return current_user
+
+
+@router.post("/me/change-password", status_code=status.HTTP_204_NO_CONTENT)
+async def change_password(
+    body: ChangePasswordRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not verify_password(body.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    current_user.hashed_password = hash_password(body.new_password)
+    db.add(current_user)
+    await db.commit()
+
+
+@router.put("/me/api-key", response_model=UserRead)
+async def update_api_key(
+    body: ApiKeyRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if body.api_key == "":
+        current_user.anthropic_api_key_encrypted = None
+    else:
+        current_user.anthropic_api_key_encrypted = encrypt(body.api_key)
+
     db.add(current_user)
     await db.commit()
     return current_user

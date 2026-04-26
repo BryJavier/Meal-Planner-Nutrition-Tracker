@@ -8,14 +8,14 @@ export default function WeeklyBarChart({ data, calorieGoal }) {
 
   if (!hasData) {
     return (
-      <div style={{ height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Empty description={<span style={{ color: '#64748B' }}>No meals logged this week</span>} image={Empty.PRESENTED_IMAGE_SIMPLE} />
       </div>
     )
   }
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={280}>
       <BarChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} vertical={false} />
         <XAxis dataKey="day" tick={{ fill: DARK.text, fontSize: 12 }} axisLine={{ stroke: DARK.grid }} tickLine={false} />

@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Drawer, Select, Input, Button, Typography, Divider, Space, Spin, message, Card } from 'antd'
+import { Drawer, Select, Input, Button, Typography, Divider, Space, message, Card } from 'antd'
 import { SendOutlined, RobotOutlined } from '@ant-design/icons'
 import { streamMealSuggestions, suggestRecipe, saveSuggestedRecipe } from '../../api/ai'
+import MealSuggestionOutput from './MealSuggestionOutput'
 
 const SLOTS = ['breakfast', 'lunch', 'dinner', 'snack']
 
@@ -68,7 +69,7 @@ export default function AISuggestionPanel({ open, onClose }) {
       title={<Space><RobotOutlined style={{ color: '#52c41a' }} /> AI Meal Assistant</Space>}
       open={open}
       onClose={onClose}
-      width={480}
+      width={Math.min(480, window.innerWidth)}
     >
       <Typography.Title level={5}>Meal Suggestions</Typography.Title>
       <Space.Compact style={{ width: '100%', marginBottom: 8 }}>
@@ -96,10 +97,7 @@ export default function AISuggestionPanel({ open, onClose }) {
       </Button>
 
       {(streamText || streaming) && (
-        <Card size="small" style={{ background: '#f6ffed', marginBottom: 16, whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: 13 }}>
-          {streamText}
-          {streaming && <Spin size="small" style={{ marginLeft: 4 }} />}
-        </Card>
+        <MealSuggestionOutput text={streamText} streaming={streaming} />
       )}
 
       <Divider />
@@ -131,16 +129,30 @@ export default function AISuggestionPanel({ open, onClose }) {
       {suggestedRecipe && (
         <Card
           size="small"
-          title={suggestedRecipe.name}
+          title={<span style={{ color: '#F1F5F9', fontWeight: 600 }}>{suggestedRecipe.name}</span>}
           extra={<Button type="primary" size="small" onClick={handleSaveRecipe} loading={saving}>Save to Library</Button>}
+          style={{ border: '1px solid #334155' }}
         >
-          <p style={{ fontSize: 13, color: '#555' }}>{suggestedRecipe.description}</p>
-          <div style={{ fontSize: 12, color: '#888' }}>
+          <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 8 }}>{suggestedRecipe.description}</p>
+          <div style={{ fontSize: 12, color: '#64748B' }}>
             Servings: {suggestedRecipe.servings} · Ingredients: {suggestedRecipe.ingredients?.length}
           </div>
-          <div style={{ fontSize: 12, marginTop: 4, color: '#888' }}>
-            Tags: {suggestedRecipe.tags?.join(', ')}
-          </div>
+          {suggestedRecipe.tags?.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+              {suggestedRecipe.tags.map(tag => (
+                <span key={tag} style={{
+                  background: 'rgba(52, 211, 153, 0.08)',
+                  border: '1px solid rgba(52, 211, 153, 0.2)',
+                  borderRadius: 20,
+                  padding: '1px 8px',
+                  fontSize: 11,
+                  color: '#34D399',
+                }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </Card>
       )}
     </Drawer>

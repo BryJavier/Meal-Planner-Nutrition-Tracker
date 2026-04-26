@@ -20,18 +20,43 @@ export async function streamMealSuggestions(payload, onChunk, onDone) {
 
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
+  let buffer = ''
+
+  const emitEvent = (eventText) => {
+    const data = eventText
+      .split('\n')
+      .filter(line => line.startsWith('data:'))
+      .map(line => (line[5] === ' ' ? line.slice(6) : line.slice(5)))
+      .join('\n')
+
+    if (!data) return false
+    if (data === '[DONE]') {
+      onDone?.()
+      return true
+    }
+
+    onChunk(data)
+    return false
+  }
 
   while (true) {
     const { done, value } = await reader.read()
-    if (done) break
-    const text = decoder.decode(value)
-    for (const line of text.split('\n')) {
-      if (line.startsWith('data: ')) {
-        const data = line.slice(6)
-        if (data === '[DONE]') { onDone?.(); return }
-        onChunk(data)
-      }
+    buffer += decoder.decode(value || new Uint8Array(), { stream: !done })
+    buffer = buffer.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+
+    const events = buffer.split('\n\n')
+    buffer = events.pop() ?? ''
+
+    for (const eventText of events) {
+      if (emitEvent(eventText)) return
     }
+
+    if (done) break
   }
+
+  if (buffer.trim()) {
+    if (emitEvent(buffer)) return
+  }
+
   onDone?.()
 }

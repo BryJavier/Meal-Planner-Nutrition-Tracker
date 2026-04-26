@@ -31,13 +31,24 @@ class UserRead(BaseModel):
     carbs_goal_g: float | None
     fat_goal_g: float | None
     dietary_preferences: list[str] | None
+    has_anthropic_key: bool = False
 
     model_config = {"from_attributes": True}
 
 
 class UserUpdate(BaseModel):
+    username: str | None = Field(default=None, min_length=3, max_length=100)
     calorie_goal: int | None = None
     protein_goal_g: float | None = None
     carbs_goal_g: float | None = None
     fat_goal_g: float | None = None
     dietary_preferences: list[str] | None = None
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+
+
+class ApiKeyRequest(BaseModel):
+    api_key: str  # empty string = clear the stored key

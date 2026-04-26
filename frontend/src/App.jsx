@@ -9,6 +9,7 @@ import CalendarPage from './pages/CalendarPage'
 import RecipesPage from './pages/RecipesPage'
 import RecipeDetailPage from './pages/RecipeDetailPage'
 import IngredientsPage from './pages/IngredientsPage'
+import SettingsPage from './pages/SettingsPage'
 
 const { darkAlgorithm } = theme
 
@@ -115,6 +116,7 @@ export default function App() {
               <Route path="/recipes" element={<RecipesPage />} />
               <Route path="/recipes/:id" element={<RecipeDetailPage />} />
               <Route path="/ingredients" element={<IngredientsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Route>
         </Routes>

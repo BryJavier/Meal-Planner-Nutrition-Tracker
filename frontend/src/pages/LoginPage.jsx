@@ -2,6 +2,7 @@ import { Form, Input, Button, Card, Typography, message } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../api/auth'
 import useAuthStore from '../store/authStore'
+import AppLogo from '../components/AppLogo'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -29,6 +30,9 @@ export default function LoginPage() {
     }}>
       <Card style={{ width: '100%', maxWidth: 400 }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+            <AppLogo size={56} variant="badge" />
+          </div>
           <Typography.Title level={3} style={{ margin: 0, color: '#34D399' }}>
             MealPlanner
           </Typography.Title>

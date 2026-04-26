@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,15 +17,24 @@ from app.services import ai_service
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
 
+def _sse_event(text: str) -> str:
+    lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    payload = "\n".join(f"data: {line}" if line else "data:" for line in lines)
+    return f"{payload}\n\n"
+
+
 @router.post("/suggest-meals")
 async def suggest_meals(
     request: Request,
     body: MealSuggestionRequest,
     current_user: User = Depends(get_current_user),
 ):
+    if not current_user.anthropic_api_key_encrypted:
+        raise HTTPException(status_code=400, detail="No Anthropic API key set. Add one in Settings.")
+
     async def event_generator():
         async for chunk in ai_service.stream_meal_suggestions(current_user, body.meal_slot, body.additional_context):
-            yield f"data: {chunk}\n\n"
+            yield _sse_event(chunk)
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(
@@ -40,9 +49,14 @@ async def suggest_recipe(
     body: RecipeSuggestionRequest,
     current_user: User = Depends(get_current_user),
 ):
-    recipe_data = await ai_service.generate_recipe(
-        current_user, body.name, body.description, body.target_calories
-    )
+    if not current_user.anthropic_api_key_encrypted:
+        raise HTTPException(status_code=400, detail="No Anthropic API key set. Add one in Settings.")
+    try:
+        recipe_data = await ai_service.generate_recipe(
+            current_user, body.name, body.description, body.target_calories
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return recipe_data
 
 

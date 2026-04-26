@@ -6,10 +6,12 @@ import {
   CalendarOutlined,
   BookOutlined,
   DatabaseOutlined,
+  SettingOutlined,
   UserOutlined,
   LogoutOutlined,
 } from '@ant-design/icons'
 import useAuthStore from '../../store/authStore'
+import AppLogo from '../AppLogo'
 
 const { Header, Content, Sider } = Layout
 
@@ -18,6 +20,7 @@ const navItems = [
   { key: '/calendar', icon: <CalendarOutlined />, label: 'Calendar' },
   { key: '/recipes', icon: <BookOutlined />, label: 'Recipes' },
   { key: '/ingredients', icon: <DatabaseOutlined />, label: 'Ingredients' },
+  { key: '/settings', icon: <SettingOutlined />, label: 'Settings' },
 ]
 
 const LG_BREAKPOINT = 992
@@ -59,11 +62,15 @@ export default function AppLayout() {
         >
           <div style={{
             padding: '20px 20px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
             fontWeight: 700,
             fontSize: 17,
             color: '#34D399',
             letterSpacing: '-0.3px',
           }}>
+            <AppLogo size={26} variant="icon" />
             MealPlanner
           </div>
           <Menu
@@ -91,7 +98,8 @@ export default function AppLayout() {
           zIndex: 9,
         }}>
           {isMobile ? (
-            <span style={{ fontWeight: 700, fontSize: 17, color: '#34D399', letterSpacing: '-0.3px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 17, color: '#34D399', letterSpacing: '-0.3px' }}>
+              <AppLogo size={24} variant="icon" />
               MealPlanner
             </span>
           ) : (
