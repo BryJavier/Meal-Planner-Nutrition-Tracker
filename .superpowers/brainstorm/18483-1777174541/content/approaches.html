@@ -1,0 +1,42 @@
+<h2>Architectural Approaches</h2>
+<p class="subtitle">How should the floating meal suggestion panel integrate into the app?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Floating Button + Sidebar Panel</h3>
+      <p><strong>Small button</strong> (bottom-right) that expands into a fixed sidebar on the same side. Panel persists while user navigates, closes on route change.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Always accessible</li><li>Dedicated space for meal suggestions</li><li>No modal overlay clutter</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Takes up horizontal space</li><li>Layout shift when expanding</li><li>Mobile unfriendly</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Floating Button + Modal Dialog</h3>
+      <p><strong>Small button</strong> (bottom-right) opens a centered modal/dialog. Modal closes both on dismiss and on route change.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>No layout disruption</li><li>Mobile responsive</li><li>Lightweight implementation</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Blocks access to page</li><li>Closes on navigation</li><li>Feels more transient</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Floating Button + Collapsible Drawer (Recommended)</h3>
+      <p><strong>Small button</strong> (bottom-right) expands into a sliding drawer panel. Responsive: takes sidebar space on desktop, bottom drawer on mobile. Auto-closes on route change.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Mobile & desktop optimized</li><li>No modal overlay</li><li>Accessible, always available</li><li>Responsive design</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Slightly more complex</li><li>Need responsive logic</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top: 2rem; color: #666; font-size: 0.9rem;">Option C (Collapsible Drawer) is recommended — it gives you the best UX across all screen sizes and matches your requirement for bottom-right placement that closes on navigation.</p>

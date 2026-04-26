@@ -1,0 +1,57 @@
+<h2>Meal Suggestion → Recipe UI Flow</h2>
+<p class="subtitle">Visual mockup of the complete user journey</p>
+
+<div class="mockup">
+  <div class="mockup-header">Step 1: Floating Button (Collapsed)</div>
+  <div class="mockup-body" style="position: relative; min-height: 400px; background: #f5f5f5;">
+    <div style="padding: 20px; color: #999;">Main App Content</div>
+    <div style="position: absolute; bottom: 20px; right: 20px; width: 56px; height: 56px; background: #1890ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">🍽️</div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Step 2: Drawer Expanded (Desktop)</div>
+  <div class="mockup-body" style="display: flex; position: relative; min-height: 400px;">
+    <div style="flex: 1; padding: 20px; background: #f5f5f5; color: #999;">Main App Content</div>
+    <div style="width: 350px; background: white; border-left: 1px solid #e0e0e0; padding: 20px; overflow-y: auto;">
+      <div style="font-weight: bold; margin-bottom: 12px;">💡 Meal Suggestion</div>
+      <div style="background: #fafafa; padding: 16px; border-radius: 4px; margin-bottom: 16px;">
+        <div style="font-weight: 500; margin-bottom: 8px;">Grilled Chicken Salad</div>
+        <div style="font-size: 12px; color: #666; margin-bottom: 6px;">⏱ 15 min | 🍽 2 servings</div>
+        <div style="font-size: 12px; color: #666; margin-bottom: 8px;">Macros: P: 35g | C: 20g | F: 8g</div>
+        <div style="font-size: 12px; color: #999; margin-bottom: 12px;">Ingredients: Chicken breast, mixed greens, tomato, dressing...</div>
+        <button style="width: 100%; padding: 8px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Convert to Recipe</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Step 3: Convert Modal (After Button Click)</div>
+  <div class="mockup-body" style="display: flex; align-items: center; justify-content: center; min-height: 400px; background: rgba(0,0,0,0.05);">
+    <div style="background: white; width: 400px; padding: 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Save as Recipe</div>
+      <div style="font-size: 12px; color: #999; margin-bottom: 20px;">Grilled Chicken Salad</div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 6px;">Servings</label>
+        <input type="number" value="2" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 14px;" />
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button style="flex: 1; padding: 8px; background: #f0f0f0; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer;">Cancel</button>
+        <button style="flex: 1; padding: 8px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">Save Recipe</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup">
+  <div class="mockup-header">Step 4: Drawer Closes on Navigation</div>
+  <div class="mockup-body" style="min-height: 400px; background: #f5f5f5; padding: 20px;">
+    <div style="color: #999;">New page loaded → drawer automatically closed</div>
+    <div style="position: absolute; bottom: 20px; right: 20px; width: 56px; height: 56px; background: #1890ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">🍽️</div>
+  </div>
+</div>
+
+<p style="margin-top: 20px; padding: 16px; background: #f0f7ff; border-left: 4px solid #1890ff; border-radius: 4px; font-size: 12px;">
+  <strong>Key points:</strong> Button stays visible always. Drawer slides in from right. Modal appears on top for servings confirmation. Servings pre-filled with suggestion default. Ingredients scale automatically when servings change after save.
+</p>
