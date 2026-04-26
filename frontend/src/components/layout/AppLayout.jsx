@@ -12,6 +12,8 @@ import {
 } from '@ant-design/icons'
 import useAuthStore from '../../store/authStore'
 import AppLogo from '../AppLogo'
+import FloatingButton from "../meal-suggestion/FloatingButton"
+import MealSuggestionDrawer from "../meal-suggestion/MealSuggestionDrawer"
 
 const { Header, Content, Sider } = Layout
 
@@ -170,6 +172,8 @@ export default function AppLayout() {
             )
           })}
         </nav>
+      <FloatingButton />
+      <MealSuggestionDrawer />
       )}
     </Layout>
   )

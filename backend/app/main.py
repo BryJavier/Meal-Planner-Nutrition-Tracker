@@ -5,7 +5,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from app.routers import auth, ingredients, recipes, meal_plans, nutrition, ai
+from app.routers import auth, ingredients, recipes, meal_plans, nutrition, ai, suggestions
 from app.seed import seed as run_seed
 
 limiter = Limiter(key_func=get_remote_address)
@@ -33,6 +33,7 @@ app.include_router(recipes.router)
 app.include_router(meal_plans.router)
 app.include_router(nutrition.router)
 app.include_router(ai.router)
+app.include_router(suggestions.router)
 
 
 @app.exception_handler(404)

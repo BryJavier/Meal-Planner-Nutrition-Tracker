@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import String, Integer, Float, ARRAY, Text, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
 
@@ -20,6 +20,8 @@ class User(Base):
     anthropic_api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    suggestions = relationship("Suggestion", back_populates="user")
 
     @property
     def has_anthropic_key(self) -> bool:

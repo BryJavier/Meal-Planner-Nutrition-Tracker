@@ -3,6 +3,13 @@ import { Modal, Form, Input, InputNumber, Select, Button, Space, Divider, AutoCo
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import { createRecipe, updateRecipe, listIngredients } from '../../api/recipes'
 
+const scaleIngredients = (ingredients, originalServings, newServings) => {
+  return ingredients.map((ingredient) => ({
+    ...ingredient,
+    quantity_g: (ingredient.quantity_g * newServings) / originalServings,
+  }))
+}
+
 export default function RecipeForm({ open, recipe, onClose, onSaved }) {
   const [form] = Form.useForm()
   const [ingredients, setIngredients] = useState([])
@@ -48,6 +55,13 @@ export default function RecipeForm({ open, recipe, onClose, onSaved }) {
   const updateIngredient = (idx, field, value) =>
     setIngredients(prev => prev.map((ing, i) => i === idx ? { ...ing, [field]: value } : ing))
 
+  const handleServingsChange = (newServings) => {
+    const currentServings = form.getFieldValue('servings')
+    if (currentServings && ingredients.length > 0) {
+      setIngredients(scaleIngredients(ingredients, currentServings, newServings))
+    }
+  }
+
   const onFinish = async (values) => {
     const invalid = ingredients.some(i => !i.ingredient_id || !i.quantity_g)
     if (invalid) { message.error('Select each ingredient from the dropdown and enter a gram amount'); return }
@@ -92,7 +106,7 @@ export default function RecipeForm({ open, recipe, onClose, onSaved }) {
         </Form.Item>
         <Space>
           <Form.Item name="servings" label="Servings" initialValue={1}>
-            <InputNumber min={1} style={{ width: 100 }} />
+            <InputNumber min={1} style={{ width: 100 }} onChange={handleServingsChange} />
           </Form.Item>
           <Form.Item name="prep_time_minutes" label="Prep (min)">
             <InputNumber min={0} style={{ width: 100 }} />
